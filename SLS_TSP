@@ -1,0 +1,114 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class SLS_TSP {
+
+	int sourceNode = 0;
+	double[][] adjMatrix;
+
+	private List<Integer> SLS() {
+		List<Integer> bestPath = getRandomPath(adjMatrix.length);
+		Boolean endSearch = false;
+		while (!endSearch) {
+			double currDistance = distance(bestPath);
+			System.out.println("current distance" + currDistance);
+			bestPath = pickNextPath(currDistance, bestPath);
+			if (currDistance == distance(bestPath)) {
+				System.out.println("best distance" + currDistance);
+				endSearch = true;
+			}
+		}
+		return bestPath;
+	}
+
+	private List<Integer> getRandomPath(int N) {
+		List<Integer> randomPath = new ArrayList<>();
+		randomPath.add(sourceNode);
+		boolean endGeneration = false;
+
+		while (!endGeneration) {
+			Random rand = new Random();
+			int random = rand.nextInt(N - 1) + 1; // TODO: Check and change
+			System.out.println("random value is " + random);
+			if (!randomPath.contains(random)) {
+				randomPath.add(random);
+			}
+
+			if (randomPath.size() == N) {
+				endGeneration = true;
+			}
+		}
+		randomPath.add(sourceNode);
+		System.out.println("randomPath is " + randomPath);
+		return randomPath;
+	}
+
+	private double distance(List<Integer> path) {
+		double pathCost = 0;
+		for (int i = 1; i < path.size(); i++) {
+			pathCost += adjMatrix[path.get(i - 1)][path.get(i)];
+		}
+		return pathCost;
+	}
+
+	private List<Integer> swapEdges(List<Integer> path, int e, int e_) {
+		List<Integer> newPath = new ArrayList<Integer>();
+		int i = 0;
+		for (; i < e; i++) {
+			newPath.add(path.get(i));
+		}
+		for (int j = e_ - 1; j >= e; j--) {
+			newPath.add(path.get(j));
+			i++;
+		}
+
+		for (; i < path.size(); i++) {
+			newPath.add(path.get(i));
+		}
+
+		return newPath;
+	}
+
+	private List<Integer> pickNextPath(double currDistance, List<Integer> path) {
+		List<Integer> nextPath = new ArrayList<>();
+		for (int i = 1; i < path.size() - 2; i++) {
+			for (int j = i + 2; j < path.size(); j++) {
+				if (edgeHasCommonNodes(i, j, path)) {
+					continue;
+				}
+				nextPath = swapEdges(path, i, j);
+
+				if (distance(nextPath) < currDistance) {
+					return nextPath;
+				}
+
+			}
+		}
+		return path;
+	}
+
+	private boolean edgeHasCommonNodes(int i, int j, List<Integer> path) {
+		if (path.get(i - 1) == path.get(j)) {
+			return true;
+		}
+		if (path.get(i - 1) == path.get(j - 1)) {
+			return true;
+		}
+		if (path.get(i) == path.get(j)) {
+			return true;
+		}
+		if (path.get(i) == path.get(j - 1)) {
+			return true;
+		}
+		return false;
+	}
+
+	public static void main(String[] args) {
+		double adj[][] = { { Double.MAX_VALUE, 10, 15, 20 }, { 10, Double.MAX_VALUE, 35, 25 }, { 15, 35, Double.MAX_VALUE, 30 }, { 20, 25, 30, Double.MAX_VALUE } };
+		SLS_TSP tsp = new SLS_TSP();
+		tsp.adjMatrix = adj;
+		System.out.println("::::::bestPath:::" + tsp.SLS());
+
+	}
+}
